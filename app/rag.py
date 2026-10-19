@@ -17,9 +17,11 @@ INDEX_PATH = Path("data/index.tv")
 META_PATH = Path("data/index_meta.json")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-MODEL = "openrouter/free"
+MODEL = "nvidia/nemotron-3.5-super-vl:free"
+
 SCORE_THRESHOLD = 0.40
 TOP_K = 5
+
 
 _index = None
 _meta = None
@@ -89,10 +91,8 @@ def deduplicate_by_language(results: list[dict], query_lang: str) -> list[dict]:
     for _doc_id, variants in by_doc.items():
         matching = [v for v in variants if v["language"] == query_lang]
         if matching:
-            # Keep all matching-language variants (usually just one)
             kept.extend(matching)
         else:
-            # Fall back to the top-scoring variant
             kept.append(max(variants, key=lambda x: x["score"]))
 
     kept.sort(key=lambda x: x["score"], reverse=True)
@@ -142,22 +142,28 @@ async def call_openrouter(prompt: str) -> str:
         raise RuntimeError("OPENROUTER_API_KEY not set in .env")
 
     async with httpx.AsyncClient(timeout=60.0) as client:
-        response = await client.post(
-            OPENROUTER_URL,
-            headers={
-                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "Content-Type": "application/json",
-                "HTTP-Referer": "https://github.com/thewhitesword/marhba",
-                "X-Title": "Marhba",
-            },
-            json={
-                "model": MODEL,
-                "messages": [{"role": "user", "content": prompt}],
-            },
-        )
-        response.raise_for_status()
-        data = response.json()
-        return data["choices"][0]["message"]["content"]
+        for attempt in range(2):  # retry once on 5xx (transient upstream errors)
+            response = await client.post(
+                OPENROUTER_URL,
+                headers={
+                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": "https://github.com/thewhitesword/marhba",
+                    "X-Title": "Marhba",
+                },
+                json={
+                    "model": MODEL,
+                    "messages": [{"role": "user", "content": prompt}],
+                },
+            )
+            if response.status_code >= 500 and attempt == 0:
+                continue  # retry once on 5xx
+            response.raise_for_status()
+            data = response.json()
+            return data["choices"][0]["message"]["content"]
+
+    # If both attempts returned 5xx, raise the last response's error
+    response.raise_for_status()
 
 
 async def answer(query: str) -> dict:

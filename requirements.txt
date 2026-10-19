@@ -1,6 +1,9 @@
 python-frontmatter
 pyyaml
-sentence-transformers
+onnxruntime
+tokenizers
+numpy
+huggingface-hub
 turbovec
 fastapi
 uvicorn[standard]
