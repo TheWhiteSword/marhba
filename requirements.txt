@@ -1,9 +1,6 @@
 python-frontmatter
 pyyaml
-onnxruntime
-tokenizers
 numpy
-huggingface-hub
 turbovec
 fastapi
 uvicorn[standard]

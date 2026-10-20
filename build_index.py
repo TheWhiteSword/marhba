@@ -19,15 +19,15 @@ from typing import Any
 
 import frontmatter
 import numpy as np
-from sentence_transformers import SentenceTransformer
 from turbovec import TurboQuantIndex
+
+from app.embed import embed
 
 # ---- Config ----
 SOURCES_DIR = Path("data/sources")
 INDEX_PATH = Path("data/index.tv")
 META_PATH = Path("data/index_meta.json")
-EMBED_MODEL = "hotchpotch/bekko-embedding-v1-a8m"
-EMBED_DIM = 384
+EMBED_DIM = 768  # Gemini gemini-embedding-001 output dimension
 BIT_WIDTH = 4  # 2, 3, or 4. 4 = best accuracy.
 MAX_CHUNK_CHARS = 500
 MIN_CHUNK_CHARS = 100
@@ -46,7 +46,7 @@ def split_into_sections(body: str) -> list[dict[str, str]]:
     """
     lines = body.split("\n")
     sections: list[dict[str, str]] = []
-    heading_stack: list[tuple[int, str]] = []  # [(level, text), ...]
+    heading_stack: list[tuple[int, str]] = []
     buffer: list[str] = []
 
     def flush():
@@ -62,7 +62,6 @@ def split_into_sections(body: str) -> list[dict[str, str]]:
             flush()
             level = len(m.group(1))
             text = m.group(2).strip()
-            # Pop stack to parent level
             while heading_stack and heading_stack[-1][0] >= level:
                 heading_stack.pop()
             heading_stack.append((level, text))
@@ -85,7 +84,6 @@ def chunk_section(section: dict[str, str]) -> list[str]:
         text = f"{path} — {content}" if path else content
         return [text] if len(text) >= MIN_CHUNK_CHARS else []
 
-    # Split by paragraph boundaries
     paragraphs = [p.strip() for p in content.split("\n\n") if p.strip()]
     chunks: list[str] = []
     buf = ""
@@ -98,7 +96,6 @@ def chunk_section(section: dict[str, str]) -> list[str]:
                 text = f"{path} — {buf}" if path else buf
                 if len(text) >= MIN_CHUNK_CHARS:
                     chunks.append(text)
-            # If single paragraph is too long, hard-split at sentence boundaries
             if len(p) > MAX_CHUNK_CHARS:
                 sentences = re.split(r"(?<=[.!?])\s+", p)
                 sub_buf = ""
@@ -169,7 +166,6 @@ def build_chunk_records() -> list[dict[str, Any]]:
 def main():
     print("=== Marhba index builder ===\n")
 
-    # 1. Parse and chunk
     print("[1/4] Parsing and chunking sources...")
     records = build_chunk_records()
     print(f"Total chunks: {len(records)}\n")
@@ -177,29 +173,35 @@ def main():
     if not records:
         raise SystemExit("No chunks produced. Check your source files.")
 
-    # 2. Embed
-    print(f"[2/4] Loading embedding model: {EMBED_MODEL}")
-    model = SentenceTransformer(EMBED_MODEL)
-    print("Model loaded.\n")
-
-    print(f"[3/4] Embedding {len(records)} chunks...")
+    print(f"[2/4] Embedding {len(records)} chunks via Gemini API...")
+    print("      This will make one API call per chunk. Be patient.")
     texts = [r["text"] for r in records]
-    vectors = model.encode(
-        texts,
-        normalize_embeddings=True,
-        show_progress_bar=True,
-        batch_size=32,
-    ).astype(np.float32)
+
+    # Embed in batches of 20 to avoid overwhelming the API and to give progress
+    all_vectors = []
+    batch_size = 20
+    for i in range(0, len(texts), batch_size):
+        batch = texts[i:i + batch_size]
+        vecs = embed(batch)
+        all_vectors.append(vecs)
+        print(f"      Embedded {min(i + batch_size, len(texts))}/{len(texts)}")
+
+    vectors = np.vstack(all_vectors).astype(np.float32)
     print(f"Embeddings shape: {vectors.shape}\n")
 
-    # 3. Build Turbovec index
-    print(f"[4/4] Building Turbovec index (dim={EMBED_DIM}, bit_width={BIT_WIDTH})")
+    if vectors.shape[1] != EMBED_DIM:
+        raise SystemExit(
+            f"Expected {EMBED_DIM}-dim embeddings, got {vectors.shape[1]}. "
+            f"Update EMBED_DIM in build_index.py."
+        )
+
+    print(f"[3/4] Building Turbovec index (dim={EMBED_DIM}, bit_width={BIT_WIDTH})")
     index = TurboQuantIndex(dim=EMBED_DIM, bit_width=BIT_WIDTH)
     index.add(np.ascontiguousarray(vectors))
     index.write(str(INDEX_PATH))
     print(f"Index written to {INDEX_PATH}")
 
-    # 4. Save metadata
+    print("[4/4] Saving metadata...")
     meta_records = []
     for i, r in enumerate(records):
         meta_records.append({

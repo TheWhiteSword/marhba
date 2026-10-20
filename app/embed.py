@@ -1,83 +1,65 @@
-"""Torch-free ONNX embedding — downloads from HF during build."""
+"""Cloud embedding via Google Gemini API — no local model, fits Render free tier."""
 
 import os
-from pathlib import Path
+import time
 
+import httpx
 import numpy as np
-import onnxruntime as ort
-from huggingface_hub import hf_hub_download
-from tokenizers import Tokenizer
+from dotenv import load_dotenv
 
-_model = None
-_tokenizer = None
+load_dotenv()
 
-MODEL_ID = "hotchpotch/bekko-embedding-v1-a8m"
-ONNX_FILE = "onnx/model.onnx"
-TOKENIZER_FILE = "tokenizer.json"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+MODEL = "gemini-embedding-001"
+EMBED_DIM = 768
+API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:embedContent"
 
-CACHE_DIR = Path("data/model_cache").resolve()
-CACHE_DIR.mkdir(parents=True, exist_ok=True)
-
-
-def get_model():
-    global _model, _tokenizer
-    if _model is None:
-        os.environ.setdefault("HF_HUB_DOWNLOAD_TIMEOUT", "300")
-
-        onnx_path = hf_hub_download(
-            repo_id=MODEL_ID,
-            filename=ONNX_FILE,
-            cache_dir=str(CACHE_DIR),
-        )
-        tokenizer_path = hf_hub_download(
-            repo_id=MODEL_ID,
-            filename=TOKENIZER_FILE,
-            cache_dir=str(CACHE_DIR),
-        )
-
-        # Defensive check: both paths must be real files, not .refs/.lock
-        for label, p in (("ONNX", onnx_path), ("Tokenizer", tokenizer_path)):
-            path_obj = Path(p)
-            if not path_obj.exists():
-                raise RuntimeError(f"{label} file missing: {p}")
-            if path_obj.suffix in (".refs", ".lock"):
-                raise RuntimeError(
-                    f"{label} path points to metadata file, not model: {p}"
-                )
-
-        sess_options = ort.SessionOptions()
-        sess_options.enable_cpu_mem_arena = False
-        sess_options.enable_mem_pattern = False
-        sess_options.intra_op_num_threads = 1
-        sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_DISABLE_ALL
-
-        _model = ort.InferenceSession(
-            onnx_path,
-            sess_options=sess_options,
-            providers=["CPUExecutionProvider"],
-        )
-        _tokenizer = Tokenizer.from_file(tokenizer_path)
-        _tokenizer.enable_truncation(max_length=512)
-        _tokenizer.enable_padding(pad_id=0, pad_token="[PAD]")
-    return _model, _tokenizer
+MAX_RETRIES = 5
+BASE_DELAY = 2.0  # seconds
 
 
 def embed(texts: list[str]) -> np.ndarray:
-    model, tokenizer = get_model()
-    encoded = tokenizer.encode_batch(texts)
-    input_ids = np.array([e.ids for e in encoded], dtype=np.int64)
-    attention_mask = np.array([e.attention_mask for e in encoded], dtype=np.int64)
+    """Get embeddings from Google Gemini API with retry on 429."""
+    if not GEMINI_API_KEY:
+        raise RuntimeError(
+            "GEMINI_API_KEY not set. Get one at https://aistudio.google.com/apikey"
+        )
 
-    outputs = model.run(None, {
-        "input_ids": input_ids,
-        "attention_mask": attention_mask,
-    })
+    embeddings_list = []
+    with httpx.Client(timeout=60.0) as client:
+        for text in texts:
+            for attempt in range(MAX_RETRIES):
+                try:
+                    response = client.post(
+                        API_URL,
+                        headers={"x-goog-api-key": GEMINI_API_KEY},
+                        json={
+                            "model": f"models/{MODEL}",
+                            "content": {"parts": [{"text": text}]},
+                            "output_dimensionality": EMBED_DIM,
+                        },
+                    )
+                    if response.status_code == 429:
+                        # Exponential backoff: 2s, 4s, 8s, 16s, 32s
+                        delay = BASE_DELAY * (2 ** attempt)
+                        print(f"      429 rate limit, waiting {delay:.0f}s...")
+                        time.sleep(delay)
+                        continue
+                    response.raise_for_status()
+                    data = response.json()
+                    embeddings_list.append(data["embedding"]["values"])
+                    break  # Success, move to next text
+                except httpx.HTTPStatusError as e:
+                    if e.response.status_code == 429 and attempt < MAX_RETRIES - 1:
+                        continue  # Will be caught by the retry loop
+                    raise
+            else:
+                raise RuntimeError(
+                    f"Failed to embed text after {MAX_RETRIES} retries due to rate limits. "
+                    "Wait a few minutes and run the build again."
+                )
 
-    last_hidden = outputs[0]
-    mask = attention_mask[:, :, None].astype(np.float32)
-    summed = (last_hidden * mask).sum(axis=1)
-    counts = mask.sum(axis=1)
-    embeddings = summed / np.maximum(counts, 1e-9)
+    embeddings = np.array(embeddings_list, dtype=np.float32)
     norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
     embeddings = embeddings / np.maximum(norms, 1e-9)
-    return embeddings.astype(np.float32)
+    return embeddings
