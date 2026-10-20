@@ -22,6 +22,14 @@ MODEL = "nvidia/nemotron-3.5-super-vl:free"
 SCORE_THRESHOLD = 0.40
 TOP_K = 5
 
+REFUSAL_MARKERS = [
+    "i don't have official information",
+    "i do not have official information",
+    "je n'ai pas d'information officielle",
+    "no official information",
+    "please consult the algerian consulate",
+    "veuillez consulter le consulat",
+]
 
 _index = None
 _meta = None
@@ -51,6 +59,12 @@ def detect_language(text: str) -> str:
     if any(m in lower for m in french_markers):
         return "fr"
     return "en"
+
+
+def is_refusal(answer_text: str) -> bool:
+    """Return True if the LLM's answer contains a refusal phrase."""
+    lower = answer_text.lower()
+    return any(marker in lower for marker in REFUSAL_MARKERS)
 
 
 def retrieve(query: str, k: int = TOP_K):
@@ -198,5 +212,5 @@ async def answer(query: str) -> dict:
     return {
         "answer": answer_text,
         "sources": sources,
-        "refused": False,
+        "refused": is_refusal(answer_text),
     }
