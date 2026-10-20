@@ -1,4 +1,3 @@
-"""Embedding model singleton — ONNX backend for low memory on Render."""
 """Torch-free ONNX embedding — downloads from HF during build."""
 
 import os
@@ -25,6 +24,8 @@ def get_model():
     if _model is None:
         os.environ.setdefault("HF_HUB_DOWNLOAD_TIMEOUT", "300")
 
+        # hf_hub_download returns the path to the actual file (following the
+        # snapshot symlink to the blob). Trust these paths instead of globbing.
         onnx_path = hf_hub_download(
             repo_id=MODEL_ID,
             filename=ONNX_FILE,
@@ -35,6 +36,16 @@ def get_model():
             filename=TOKENIZER_FILE,
             cache_dir=str(CACHE_DIR),
         )
+
+        # Defensive check: both paths must be real files, not .refs/.lock
+        for label, p in (("ONNX", onnx_path), ("Tokenizer", tokenizer_path)):
+            path_obj = Path(p)
+            if not path_obj.exists():
+                raise RuntimeError(f"{label} file missing: {p}")
+            if path_obj.suffix in (".refs", ".lock"):
+                raise RuntimeError(
+                    f"{label} path points to metadata file, not model: {p}"
+                )
 
         sess_options = ort.SessionOptions()
         sess_options.enable_cpu_mem_arena = False
