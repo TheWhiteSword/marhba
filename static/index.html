@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marhba — Algerian Travel Regulations</title>
+  <style>
+    /* Algerian flag palette */
+    :root {
+      --dz-green: #006233;
+      --dz-green-dark: #004d28;
+      --dz-green-light: #e6f2ed;
+      --dz-red: #D21034;
+      --dz-red-light: #fbeaee;
+      --white: #ffffff;
+      --text-dark: #1a1a1a;
+      --text-muted: #6b6b6b;
+      --border: #e3e3e3;
+      --bg: #fafafa;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header with flag-inspired accent */
+    header {
+      background: var(--dz-green);
+      color: var(--white);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    header .flag-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      flex-shrink: 0;
+    }
+
+    header .flag-icon .half-green {
+      width: 50%;
+      background: var(--dz-green-dark);
+    }
+
+    header .flag-icon .half-white {
+      width: 50%;
+      background: var(--white);
+      position: relative;
+    }
+
+    /* Crescent + star inside the white half */
+    header .flag-icon .half-white::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--dz-red);
+    }
+
+    header .flag-icon .half-white::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-58%, -50%);
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--white);
+    }
+
+    header .flag-icon .star {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(20%, -50%);
+      width: 6px;
+      height: 6px;
+      background: var(--dz-red);
+      clip-path: polygon(
+        50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%,
+        50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%
+      );
+      z-index: 1;
+    }
+
+    header h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    header .subtitle {
+      font-size: 0.75rem;
+      opacity: 0.85;
+      margin-top: 2px;
+    }
+
+    header .header-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Main chat area */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 820px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding-bottom: 1rem;
+    }
+
+    .message {
+      display: flex;
+      flex-direction: column;
+      max-width: 85%;
+      animation: fadeIn 0.2s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user {
+      align-self: flex-end;
+      align-items: flex-end;
+    }
+
+    .message.bot {
+      align-self: flex-start;
+      align-items: flex-start;
+    }
+
+    .bubble {
+      padding: 0.75rem 1rem;
+      border-radius: 14px;
+      line-height: 1.5;
+      font-size: 0.95rem;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
+
+    .message.user .bubble {
+      background: var(--dz-green);
+      color: var(--white);
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.bot .bubble {
+      background: var(--white);
+      color: var(--text-dark);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+    }
+
+    .message.bot.refused .bubble {
+      border-left: 3px solid var(--dz-red);
+      background: var(--dz-red-light);
+    }
+
+    /* Sources */
+    .sources {
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .sources summary {
+      cursor: pointer;
+      user-select: none;
+      padding: 0.25rem 0;
+      color: var(--dz-green);
+      font-weight: 500;
+    }
+
+    .sources ul {
+      list-style: none;
+      margin-top: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .sources li {
+      background: var(--dz-green-light);
+      border-radius: 6px;
+      padding: 0.4rem 0.6rem;
+      line-height: 1.4;
+    }
+
+    .sources li .source-doc {
+      font-weight: 600;
+      color: var(--dz-green-dark);
+    }
+
+    .sources li .source-meta {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .sources li a {
+      color: var(--dz-green);
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .sources li a:hover {
+      text-decoration: underline;
+    }
+
+    /* Loading indicator */
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      padding: 0.75rem 1rem;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      border-bottom-left-radius: 4px;
+      align-self: flex-start;
+    }
+
+    .typing-indicator span {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--dz-green);
+      animation: typing 1.2s infinite;
+    }
+
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing {
+      0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+      30% { opacity: 1; transform: translateY(-4px); }
+    }
+
+    /* Footer / input */
+    footer {
+      border-top: 1px solid var(--border);
+      background: var(--white);
+      padding: 1rem 1.5rem;
+    }
+
+    #input-form {
+      max-width: 820px;
+      margin: 0 auto;
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    #question {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: border-color 0.15s;
+      outline: none;
+    }
+
+    #question:focus {
+      border-color: var(--dz-green);
+    }
+
+    #send-btn {
+      padding: 0.75rem 1.25rem;
+      background: var(--dz-green);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    #send-btn:hover:not(:disabled) {
+      background: var(--dz-green-dark);
+    }
+
+    #send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Warmup banner */
+    #warmup-banner {
+      display: none;
+      background: var(--dz-green-light);
+      border: 1px solid var(--dz-green);
+      color: var(--dz-green-dark);
+      border-radius: 8px;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    #warmup-banner.visible {
+      display: block;
+    }
+
+    /* Suggestion chips */
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .suggestion-chip {
+      background: var(--white);
+      border: 1px solid var(--border);
+      color: var(--text-dark);
+      padding: 0.5rem 0.9rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .suggestion-chip:hover {
+      border-color: var(--dz-green);
+      background: var(--dz-green-light);
+      color: var(--dz-green-dark);
+    }
+
+    /* Scrollbar */
+    #messages::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #messages::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    #messages::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    /* Mobile */
+    @media (max-width: 600px) {
+      header { padding: 0.75rem 1rem; }
+      main { padding: 1rem; }
+      .message { max-width: 92%; }
+      footer { padding: 0.75rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="flag-icon">
+      <div class="half-green"></div>
+      <div class="half-white">
+        <div class="star"></div>
+      </div>
+    </div>
+    <div class="header-content">
+      <h1>Marhba</h1>
+      <div class="subtitle">Algerian travel regulations · grounded answers</div>
+    </div>
+  </header>
+
+  <main>
+    <div id="warmup-banner">
+      Waking up the server — this can take up to a minute on the first request.
+    </div>
+    <div id="messages"></div>
+    <div class="suggestions" id="suggestions">
+      <button class="suggestion-chip" data-q="How many cigarettes can I bring duty-free?">
+        Duty-free tobacco?
+      </button>
+      <button class="suggestion-chip" data-q="How much cash must I declare when entering Algeria?">
+        Currency declaration?
+      </button>
+      <button class="suggestion-chip" data-q="Can I bring a drone to Algeria?">
+        Can I bring a drone?
+      </button>
+      <button class="suggestion-chip" data-q="Quel est le seuil de déclaration de la monnaie ?">
+        Seuil de déclaration (FR)
+      </button>
+    </div>
+  </main>
+
+  <footer>
+    <form id="input-form">
+      <input
+        type="text"
+        id="question"
+        placeholder="Ask about visas, customs, currency…"
+        autocomplete="off"
+        required
+      />
+      <button type="submit" id="send-btn">Ask</button>
+    </form>
+  </footer>
+
+  <script>
+    // Auto-detect backend URL:
+    // - When served by FastAPI (same origin), use relative path
+    // - When opened as a local file, fall back to localhost:8000
+    const API_BASE = window.location.origin.startsWith("http")
+      ? window.location.origin
+      : "http://127.0.0.1:8000";
+
+    const messagesEl = document.getElementById("messages");
+    const form = document.getElementById("input-form");
+    const input = document.getElementById("question");
+    const sendBtn = document.getElementById("send-btn");
+    const suggestionsEl = document.getElementById("suggestions");
+    const warmupBanner = document.getElementById("warmup-banner");
+
+    let coldStartTimer = null;
+
+    function showWarmupIfSlow() {
+      coldStartTimer = setTimeout(() => {
+        warmupBanner.classList.add("visible");
+      }, 3000);
+    }
+
+    function hideWarmup() {
+      clearTimeout(coldStartTimer);
+      warmupBanner.classList.remove("visible");
+    }
+
+    function appendUser(text) {
+      const el = document.createElement("div");
+      el.className = "message user";
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.textContent = text;
+      el.appendChild(bubble);
+      messagesEl.appendChild(el);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function appendTyping() {
+      const el = document.createElement("div");
+      el.className = "typing-indicator";
+      el.id = "typing-indicator";
+      el.innerHTML = "<span></span><span></span><span></span>";
+      messagesEl.appendChild(el);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function removeTyping() {
+      const el = document.getElementById("typing-indicator");
+      if (el) el.remove();
+    }
+
+    function appendBot(answer, sources, refused) {
+      const el = document.createElement("div");
+      el.className = "message bot" + (refused ? " refused" : "");
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.textContent = answer;
+      el.appendChild(bubble);
+
+      if (sources && sources.length > 0) {
+        const details = document.createElement("details");
+        details.className = "sources";
+
+        const summary = document.createElement("summary");
+        summary.textContent = `Sources (${sources.length})`;
+        details.appendChild(summary);
+
+        const ul = document.createElement("ul");
+        sources.forEach((s, i) => {
+          const li = document.createElement("li");
+
+          const doc = document.createElement("div");
+          doc.className = "source-doc";
+          doc.textContent = `[${i + 1}] ${s.source_name || s.doc_id}`;
+          li.appendChild(doc);
+
+          const meta = document.createElement("div");
+          meta.className = "source-meta";
+          meta.textContent = `${s.authority} · ${s.language} · score ${s.score}`;
+          li.appendChild(meta);
+
+          if (s.source_url) {
+            const a = document.createElement("a");
+            a.href = s.source_url;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
+            a.textContent = s.source_url;
+            li.appendChild(a);
+          }
+
+          ul.appendChild(li);
+        });
+        details.appendChild(ul);
+        el.appendChild(details);
+      }
+
+      messagesEl.appendChild(el);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    async function ask(question) {
+      appendUser(question);
+      appendTyping();
+      sendBtn.disabled = true;
+      input.disabled = true;
+      showWarmupIfSlow();
+
+      try {
+        const response = await fetch(`${API_BASE}/ask`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        removeTyping();
+        appendBot(data.answer, data.sources, data.refused);
+      } catch (err) {
+        removeTyping();
+        appendBot(
+          `Sorry — could not reach the server. (${err.message})`,
+          [],
+          true
+        );
+      } finally {
+        hideWarmup();
+        sendBtn.disabled = false;
+        input.disabled = false;
+        input.focus();
+      }
+    }
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const q = input.value.trim();
+      if (!q) return;
+      input.value = "";
+      ask(q);
+    });
+
+    suggestionsEl.addEventListener("click", (e) => {
+      const chip = e.target.closest(".suggestion-chip");
+      if (!chip) return;
+      ask(chip.dataset.q);
+    });
+  </script>
+</body>
+</html>
