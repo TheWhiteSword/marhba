@@ -1,32 +1,40 @@
 """Embedding model singleton — ONNX backend for low memory on Render."""
-"""Torch-free ONNX embedding — reads from committed LFS model."""
+"""Torch-free ONNX embedding — downloads from HF during build."""
 
+import os
 from pathlib import Path
 
 import numpy as np
 import onnxruntime as ort
+from huggingface_hub import hf_hub_download
 from tokenizers import Tokenizer
 
 _model = None
 _tokenizer = None
 
-CACHE_BASE = Path("data/model_cache/blobs")
+MODEL_ID = "hotchpotch/bekko-embedding-v1-a8m"
+ONNX_FILE = "onnx/model.onnx"
+TOKENIZER_FILE = "tokenizer.json"
 
-
-def _find_blob(pattern: str) -> Path:
-    matches = list(CACHE_BASE.glob(pattern))
-    if not matches:
-        raise RuntimeError(f"No blob matching {pattern} under {CACHE_BASE}")
-    return matches[0]
+CACHE_DIR = Path("data/model_cache").resolve()
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def get_model():
     global _model, _tokenizer
     if _model is None:
-        # ONNX blob is 125 MB in blobs/f7/
-        # Tokenizer blob is 33 MB in blobs/33/
-        onnx_file = _find_blob("f7/*")
-        tokenizer_file = _find_blob("33/*")
+        os.environ.setdefault("HF_HUB_DOWNLOAD_TIMEOUT", "300")
+
+        onnx_path = hf_hub_download(
+            repo_id=MODEL_ID,
+            filename=ONNX_FILE,
+            cache_dir=str(CACHE_DIR),
+        )
+        tokenizer_path = hf_hub_download(
+            repo_id=MODEL_ID,
+            filename=TOKENIZER_FILE,
+            cache_dir=str(CACHE_DIR),
+        )
 
         sess_options = ort.SessionOptions()
         sess_options.enable_cpu_mem_arena = False
@@ -34,11 +42,11 @@ def get_model():
         sess_options.intra_op_num_threads = 1
 
         _model = ort.InferenceSession(
-            str(onnx_file),
+            onnx_path,
             sess_options=sess_options,
             providers=["CPUExecutionProvider"],
         )
-        _tokenizer = Tokenizer.from_file(str(tokenizer_file))
+        _tokenizer = Tokenizer.from_file(tokenizer_path)
         _tokenizer.enable_truncation(max_length=512)
         _tokenizer.enable_padding(pad_id=0, pad_token="[PAD]")
     return _model, _tokenizer
