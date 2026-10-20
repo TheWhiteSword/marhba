@@ -24,8 +24,6 @@ def get_model():
     if _model is None:
         os.environ.setdefault("HF_HUB_DOWNLOAD_TIMEOUT", "300")
 
-        # hf_hub_download returns the path to the actual file (following the
-        # snapshot symlink to the blob). Trust these paths instead of globbing.
         onnx_path = hf_hub_download(
             repo_id=MODEL_ID,
             filename=ONNX_FILE,
@@ -51,6 +49,7 @@ def get_model():
         sess_options.enable_cpu_mem_arena = False
         sess_options.enable_mem_pattern = False
         sess_options.intra_op_num_threads = 1
+        sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_DISABLE_ALL
 
         _model = ort.InferenceSession(
             onnx_path,
