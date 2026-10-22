@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Marhba — Algerian Travel Regulations</title>
   <style>
-    /* Algerian flag palette */
     :root {
       --dz-green: #006233;
       --dz-green-dark: #004d28;
@@ -16,378 +15,258 @@
       --text-dark: #1a1a1a;
       --text-muted: #6b6b6b;
       --border: #e3e3e3;
-      --bg: #fafafa;
+
+      --hoggar-sky-1: #f7d9a8;
+      --hoggar-sky-2: #f0c48a;
+      --hoggar-sky-3: #e8b073;
+      --hoggar-far: #c98556;
+      --hoggar-mid: #9c5f3a;
+      --hoggar-near: #5d3520;
+      --sun-core: #fff3b0;
+      --sun-mid: #f7c948;
+      --sun-glow: rgba(247, 201, 72, 0.55);
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-        "Helvetica Neue", Arial, sans-serif;
-      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: transparent;
       color: var(--text-dark);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-    }
-
-    /* Header with flag-inspired accent */
-    header {
-      background: var(--dz-green);
-      color: var(--white);
-      padding: 1rem 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-
-    header .flag-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 4px;
-      overflow: hidden;
-      display: flex;
-      flex-shrink: 0;
-    }
-
-    header .flag-icon .half-green {
-      width: 50%;
-      background: var(--dz-green-dark);
-    }
-
-    header .flag-icon .half-white {
-      width: 50%;
-      background: var(--white);
       position: relative;
+      overflow-x: hidden;
     }
 
-    /* Crescent + star inside the white half */
-    header .flag-icon .half-white::before {
-      content: "";
+    .bg-landscape {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .sky {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 14px;
-      height: 14px;
+      inset: 0;
+      background: linear-gradient(180deg,
+        #fbe7c1 0%, var(--hoggar-sky-1) 25%, var(--hoggar-sky-2) 55%, var(--hoggar-sky-3) 100%);
+      animation: skyBreath 45s ease-in-out infinite alternate;
+    }
+    @keyframes skyBreath {
+      0%   { filter: brightness(1) saturate(1); }
+      100% { filter: brightness(0.94) saturate(1.18); }
+    }
+
+    .tassili-stars {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 60%;
+      opacity: 0.7;
+      background-image:
+        radial-gradient(2px 2px at 8% 12%, rgba(93, 53, 32, 0.55), transparent 100%),
+        radial-gradient(1.5px 1.5px at 18% 28%, rgba(93, 53, 32, 0.40), transparent 100%),
+        radial-gradient(2px 2px at 28% 8%, rgba(210, 16, 52, 0.28), transparent 100%),
+        radial-gradient(1.5px 1.5px at 38% 22%, rgba(93, 53, 32, 0.45), transparent 100%),
+        radial-gradient(2px 2px at 48% 14%, rgba(93, 53, 32, 0.50), transparent 100%),
+        radial-gradient(1.5px 1.5px at 58% 32%, rgba(210, 16, 52, 0.25), transparent 100%),
+        radial-gradient(2px 2px at 68% 10%, rgba(93, 53, 32, 0.45), transparent 100%),
+        radial-gradient(1.5px 1.5px at 78% 24%, rgba(93, 53, 32, 0.40), transparent 100%),
+        radial-gradient(2px 2px at 88% 16%, rgba(93, 53, 32, 0.50), transparent 100%),
+        radial-gradient(1.5px 1.5px at 14% 40%, rgba(93, 53, 32, 0.35), transparent 100%),
+        radial-gradient(2px 2px at 34% 42%, rgba(210, 16, 52, 0.22), transparent 100%),
+        radial-gradient(1.5px 1.5px at 64% 44%, rgba(93, 53, 32, 0.35), transparent 100%),
+        radial-gradient(2px 2px at 84% 38%, rgba(93, 53, 32, 0.40), transparent 100%);
+      animation: tassiliDrift 120s linear infinite, tassiliTwinkle 10s ease-in-out infinite alternate;
+    }
+    @keyframes tassiliDrift { 0% { transform: translateX(0); } 100% { transform: translateX(-30px); } }
+    @keyframes tassiliTwinkle { 0% { opacity: 0.55; } 100% { opacity: 0.90; } }
+
+    .sun {
+      position: absolute;
+      top: 22%; left: 50%;
+      width: 140px; height: 140px; margin-left: -70px;
       border-radius: 50%;
-      background: var(--dz-red);
+      background: radial-gradient(circle at 50% 50%, var(--sun-core) 0%, var(--sun-mid) 42%, rgba(247, 201, 72, 0.20) 75%, transparent 100%);
+      box-shadow: 0 0 90px 40px var(--sun-glow), 0 0 240px 100px rgba(247, 201, 72, 0.18);
+      animation: sunArc 90s ease-in-out infinite alternate;
+    }
+    @keyframes sunArc {
+      0% { transform: translate(-220px, 60px) scale(0.92); filter: brightness(0.92); }
+      50% { transform: translate(0, 0) scale(1.06); filter: brightness(1.18); }
+      100% { transform: translate(220px, 80px) scale(0.88); filter: brightness(0.85); }
     }
 
-    header .flag-icon .half-white::after {
-      content: "";
+    .hoggar-far {
+      position: absolute; bottom: 0; left: -8%; width: 116%; height: 38%;
+      background: var(--hoggar-far); opacity: 0.55;
+      clip-path: polygon(0% 100%, 0% 62%, 4% 55%, 8% 60%, 12% 48%, 15% 54%, 20% 42%, 24% 52%, 29% 44%, 33% 55%, 38% 40%, 42% 50%, 46% 46%, 51% 58%, 55% 47%, 60% 55%, 64% 43%, 69% 52%, 73% 45%, 78% 55%, 82% 48%, 87% 58%, 91% 50%, 95% 58%, 100% 52%, 100% 100%);
+      animation: hoggarDriftFar 80s ease-in-out infinite alternate;
+    }
+    .hoggar-mid {
+      position: absolute; bottom: 0; left: -12%; width: 124%; height: 30%;
+      background: var(--hoggar-mid); opacity: 0.75;
+      clip-path: polygon(0% 100%, 0% 65%, 5% 52%, 10% 62%, 14% 48%, 19% 58%, 23% 44%, 28% 56%, 33% 40%, 38% 52%, 43% 38%, 48% 50%, 53% 42%, 58% 55%, 63% 42%, 68% 54%, 73% 40%, 78% 52%, 83% 44%, 88% 56%, 93% 46%, 100% 55%, 100% 100%);
+      animation: hoggarDriftMid 55s ease-in-out infinite alternate;
+    }
+    .hoggar-near {
+      position: absolute; bottom: 0; left: -16%; width: 132%; height: 22%;
+      background: linear-gradient(180deg, var(--hoggar-mid) 0%, var(--hoggar-near) 100%);
+      clip-path: polygon(0% 100%, 0% 68%, 6% 54%, 12% 64%, 18% 50%, 24% 62%, 30% 46%, 36% 58%, 42% 44%, 48% 56%, 54% 48%, 60% 60%, 66% 46%, 72% 58%, 78% 50%, 84% 62%, 90% 52%, 96% 62%, 100% 58%, 100% 100%);
+      animation: hoggarDriftNear 30s ease-in-out infinite alternate;
+    }
+    @keyframes hoggarDriftFar { 0% { transform: translateX(0); } 100% { transform: translateX(30px); } }
+    @keyframes hoggarDriftMid { 0% { transform: translateX(0); } 100% { transform: translateX(-40px); } }
+    @keyframes hoggarDriftNear { 0% { transform: translateX(0); } 100% { transform: translateX(55px); } }
+
+    .fennec {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-58%, -50%);
-      width: 11px;
-      height: 11px;
-      border-radius: 50%;
-      background: var(--white);
+      bottom: 15%;
+      right: 12%;
+      width: 110px;
+      height: auto;
+      fill: #3d2212;
+      opacity: 0.92;
+      filter: drop-shadow(0 4px 8px rgba(61, 34, 18, 0.35));
+      animation: fennecWatch 14s ease-in-out infinite alternate;
+    }
+    @keyframes fennecWatch {
+      0%   { transform: translateY(0) rotate(0deg); opacity: 0.88; }
+      100% { transform: translateY(-3px) rotate(-1deg); opacity: 0.97; }
     }
 
-    header .flag-icon .star {
+    .caravan {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(20%, -50%);
-      width: 6px;
-      height: 6px;
-      background: var(--dz-red);
-      clip-path: polygon(
-        50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%,
-        50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%
-      );
-      z-index: 1;
+      bottom: 12%;
+      left: 6%;
+      width: 260px;
+      height: 180px;
+      animation: caravanWalk 22s ease-in-out infinite alternate;
+    }
+    
+    .caravan svg {
+      position: absolute;
+      fill: #3d2212;
+      filter: drop-shadow(0 4px 8px rgba(61, 34, 18, 0.30));
     }
 
-    header h1 {
-      font-size: 1.25rem;
-      font-weight: 600;
-      letter-spacing: -0.02em;
+    .caravan .camel-lead {
+      bottom: 0;
+      left: 0;
+      width: 180px;
+      height: auto;
+      opacity: 0.92;
     }
 
-    header .subtitle {
-      font-size: 0.75rem;
+    .caravan .camel-trail {
+      bottom: 20px;
+      left: -60px;
+      width: 120px;
+      height: auto;
       opacity: 0.85;
-      margin-top: 2px;
     }
 
-    header .header-content {
-      display: flex;
-      flex-direction: column;
+    @keyframes caravanWalk {
+      0%   { transform: translateX(0) scale(1); }
+      100% { transform: translateX(18px) scale(1.02); }
     }
 
-    /* Main chat area */
-    main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      max-width: 820px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 1.5rem;
+    @media (max-width: 720px) {
+      .fennec, .caravan { display: none; }
     }
 
-    #messages {
-      flex: 1;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      padding-bottom: 1rem;
+    .bg-veil {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background: radial-gradient(ellipse at 50% 55%, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0.50) 55%, rgba(255, 255, 255, 0.38) 100%);
     }
 
-    .message {
-      display: flex;
-      flex-direction: column;
-      max-width: 85%;
-      animation: fadeIn 0.2s ease-in;
+    @media (prefers-reduced-motion: reduce) {
+      .sky, .sun, .tassili-stars, .hoggar-far, .hoggar-mid, .hoggar-near,
+      .fennec, .caravan { animation: none; }
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .message.user {
-      align-self: flex-end;
-      align-items: flex-end;
-    }
-
-    .message.bot {
-      align-self: flex-start;
-      align-items: flex-start;
-    }
-
-    .bubble {
-      padding: 0.75rem 1rem;
-      border-radius: 14px;
-      line-height: 1.5;
-      font-size: 0.95rem;
-      word-wrap: break-word;
-      white-space: pre-wrap;
-    }
-
-    .message.user .bubble {
-      background: var(--dz-green);
-      color: var(--white);
-      border-bottom-right-radius: 4px;
-    }
-
-    .message.bot .bubble {
-      background: var(--white);
-      color: var(--text-dark);
-      border: 1px solid var(--border);
-      border-bottom-left-radius: 4px;
-    }
-
-    .message.bot.refused .bubble {
-      border-left: 3px solid var(--dz-red);
-      background: var(--dz-red-light);
-    }
-
-    /* Sources */
-    .sources {
-      margin-top: 0.5rem;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-
-    .sources summary {
-      cursor: pointer;
-      user-select: none;
-      padding: 0.25rem 0;
-      color: var(--dz-green);
-      font-weight: 500;
-    }
-
-    .sources ul {
-      list-style: none;
-      margin-top: 0.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-    }
-
-    .sources li {
-      background: var(--dz-green-light);
-      border-radius: 6px;
-      padding: 0.4rem 0.6rem;
-      line-height: 1.4;
-    }
-
-    .sources li .source-doc {
-      font-weight: 600;
-      color: var(--dz-green-dark);
-    }
-
-    .sources li .source-meta {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    .sources li a {
-      color: var(--dz-green);
-      text-decoration: none;
-      word-break: break-all;
-    }
-
-    .sources li a:hover {
-      text-decoration: underline;
-    }
-
-    /* Loading indicator */
-    .typing-indicator {
-      display: flex;
-      gap: 4px;
-      padding: 0.75rem 1rem;
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      border-bottom-left-radius: 4px;
-      align-self: flex-start;
-    }
-
-    .typing-indicator span {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--dz-green);
-      animation: typing 1.2s infinite;
-    }
-
+    /* ============================================================
+       Existing chat UI styles
+       ============================================================ */
+    header { background: var(--dz-green); color: var(--white); padding: 1rem 1.5rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); position: relative; z-index: 2; }
+    header .flag-icon { width: 32px; height: 32px; border-radius: 4px; overflow: hidden; display: flex; flex-shrink: 0; }
+    header .flag-icon .half-green { width: 50%; background: var(--dz-green-dark); }
+    header .flag-icon .half-white { width: 50%; background: var(--white); position: relative; }
+    header .flag-icon .half-white::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 14px; height: 14px; border-radius: 50%; background: var(--dz-red); }
+    header .flag-icon .half-white::after { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-58%, -50%); width: 11px; height: 11px; border-radius: 50%; background: var(--white); }
+    header .flag-icon .star { position: absolute; top: 50%; left: 50%; transform: translate(20%, -50%); width: 6px; height: 6px; background: var(--dz-red); clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); z-index: 1; }
+    header h1 { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; }
+    header .subtitle { font-size: 0.75rem; opacity: 0.85; margin-top: 2px; }
+    header .header-content { display: flex; flex-direction: column; }
+    main { flex: 1; display: flex; flex-direction: column; max-width: 820px; width: 100%; margin: 0 auto; padding: 1.5rem; position: relative; z-index: 2; }
+    #messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; padding-bottom: 1rem; }
+    .message { display: flex; flex-direction: column; max-width: 85%; animation: fadeIn 0.2s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .message.user { align-self: flex-end; align-items: flex-end; }
+    .message.bot { align-self: flex-start; align-items: flex-start; }
+    .bubble { padding: 0.75rem 1rem; border-radius: 14px; line-height: 1.5; font-size: 0.95rem; word-wrap: break-word; white-space: pre-wrap; }
+    .message.user .bubble { background: var(--dz-green); color: var(--white); border-bottom-right-radius: 4px; }
+    .message.bot .bubble { background: rgba(255, 255, 255, 0.95); color: var(--text-dark); border: 1px solid var(--border); border-bottom-left-radius: 4px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+    .message.bot.refused .bubble { border-left: 3px solid var(--dz-red); background: var(--dz-red-light); }
+    .sources { margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted); }
+    .sources summary { cursor: pointer; user-select: none; padding: 0.25rem 0; color: var(--dz-green); font-weight: 500; }
+    .sources ul { list-style: none; margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.4rem; }
+    .sources li { background: var(--dz-green-light); border-radius: 6px; padding: 0.4rem 0.6rem; line-height: 1.4; }
+    .sources li .source-doc { font-weight: 600; color: var(--dz-green-dark); }
+    .sources li .source-meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+    .sources li a { color: var(--dz-green); text-decoration: none; word-break: break-all; }
+    .sources li a:hover { text-decoration: underline; }
+    .typing-indicator { display: flex; gap: 4px; padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.95); border: 1px solid var(--border); border-radius: 14px; border-bottom-left-radius: 4px; align-self: flex-start; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+    .typing-indicator span { width: 7px; height: 7px; border-radius: 50%; background: var(--dz-green); animation: typing 1.2s infinite; }
     .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
     .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-
-    @keyframes typing {
-      0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
-      30% { opacity: 1; transform: translateY(-4px); }
-    }
-
-    /* Footer / input */
-    footer {
-      border-top: 1px solid var(--border);
-      background: var(--white);
-      padding: 1rem 1.5rem;
-    }
-
-    #input-form {
-      max-width: 820px;
-      margin: 0 auto;
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
-
-    #question {
-      flex: 1;
-      padding: 0.75rem 1rem;
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      font-size: 0.95rem;
-      font-family: inherit;
-      transition: border-color 0.15s;
-      outline: none;
-    }
-
-    #question:focus {
-      border-color: var(--dz-green);
-    }
-
-    #send-btn {
-      padding: 0.75rem 1.25rem;
-      background: var(--dz-green);
-      color: var(--white);
-      border: none;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-
-    #send-btn:hover:not(:disabled) {
-      background: var(--dz-green-dark);
-    }
-
-    #send-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    /* Warmup banner */
-    #warmup-banner {
-      display: none;
-      background: var(--dz-green-light);
-      border: 1px solid var(--dz-green);
-      color: var(--dz-green-dark);
-      border-radius: 8px;
-      padding: 0.6rem 0.9rem;
-      font-size: 0.85rem;
-      margin-bottom: 1rem;
-      text-align: center;
-    }
-
-    #warmup-banner.visible {
-      display: block;
-    }
-
-    /* Suggestion chips */
-    .suggestions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-top: 1rem;
-    }
-
-    .suggestion-chip {
-      background: var(--white);
-      border: 1px solid var(--border);
-      color: var(--text-dark);
-      padding: 0.5rem 0.9rem;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .suggestion-chip:hover {
-      border-color: var(--dz-green);
-      background: var(--dz-green-light);
-      color: var(--dz-green-dark);
-    }
-
-    /* Scrollbar */
-    #messages::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    #messages::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    #messages::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 4px;
-    }
-
-    /* Mobile */
-    @media (max-width: 600px) {
-      header { padding: 0.75rem 1rem; }
-      main { padding: 1rem; }
-      .message { max-width: 92%; }
-      footer { padding: 0.75rem 1rem; }
-    }
+    @keyframes typing { 0%, 60%, 100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-4px); } }
+    footer { border-top: 1px solid rgba(227, 227, 227, 0.6); background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 1rem 1.5rem; position: relative; z-index: 2; }
+    #input-form { max-width: 820px; margin: 0 auto; display: flex; gap: 0.5rem; align-items: center; }
+    #question { flex: 1; padding: 0.75rem 1rem; border: 1.5px solid var(--border); border-radius: 10px; font-size: 0.95rem; font-family: inherit; transition: border-color 0.15s; outline: none; background: var(--white); }
+    #question:focus { border-color: var(--dz-green); }
+    #send-btn { padding: 0.75rem 1.25rem; background: var(--dz-green); color: var(--white); border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: background 0.15s; }
+    #send-btn:hover:not(:disabled) { background: var(--dz-green-dark); }
+    #send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    #warmup-banner { display: none; background: var(--dz-green-light); border: 1px solid var(--dz-green); color: var(--dz-green-dark); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.85rem; margin-bottom: 1rem; text-align: center; }
+    #warmup-banner.visible { display: block; }
+    .suggestions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; margin-bottom: 0.5rem; }
+    .suggestion-chip { background: rgba(255, 255, 255, 0.92); border: 1px solid var(--border); color: var(--text-dark); padding: 0.5rem 0.9rem; border-radius: 20px; font-size: 0.85rem; cursor: pointer; transition: all 0.15s; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+    .suggestion-chip:hover { border-color: var(--dz-green); background: var(--dz-green-light); color: var(--dz-green-dark); }
+    #messages::-webkit-scrollbar { width: 8px; }
+    #messages::-webkit-scrollbar-track { background: transparent; }
+    #messages::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.15); border-radius: 4px; }
+    @media (max-width: 600px) { header { padding: 0.75rem 1rem; } main { padding: 1rem; } .message { max-width: 92%; } footer { padding: 0.75rem 1rem; } .sun { width: 100px; height: 100px; margin-left: -50px; } }
   </style>
 </head>
 <body>
+  <div class="bg-landscape" aria-hidden="true">
+    <div class="sky"></div>
+    <div class="tassili-stars"></div>
+    <div class="sun"></div>
+    <div class="hoggar-far"></div>
+    <div class="hoggar-mid"></div>
+    <div class="hoggar-near"></div>
+
+    <svg class="fennec" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M145.18 180.97C148.32 179.98 151.07 177.67 154.07 176.25C160.21 173.35 166.57 170.71 173.24 169.19C189.7 165.44 220.73 165.35 236.81 170.19C242.12 171.78 247.38 173.71 252.35 176.16C255.39 177.66 258.4 179.98 261.61 181.01C267.37 177.57 272.04 172.24 277.47 168.28C285.92 162.12 294.76 156.57 303.45 150.78C316.31 142.2 329.54 133.21 344.09 127.84C353.7 124.3 373.64 117.88 379.83 130.56C382.39 135.81 380.67 142.24 379.18 147.53C375.23 161.57 367.71 174.95 360.17 187.38C348.71 206.28 337.2 224.56 320.87 239.74C314.52 245.65 307.52 250.81 300.46 255.81C295.17 259.56 289.26 262.93 285.06 268C279.53 274.69 280.25 289.91 276.73 298.94C268.81 319.28 254 325.56 234.44 332.22C233.84 335.25 234.43 338.48 233.77 341.55C232.11 349.16 227.25 356.16 220.25 359.79C218.06 360.93 215.53 361.4 213.41 362.61C215.33 363.37 217.08 362.71 219.01 362.24C227.74 360.14 233.6 354.86 236.79 346.45C237.79 343.8 238.29 337.48 241.06 336.21C257.02 328.92 272.81 322.8 280.76 305.8C284.41 298.01 287.18 279.84 291.37 274.78C296.84 268.18 307.26 265.35 314.4 260.87C324.56 254.49 334.07 246 341.61 236.65C349.79 226.5 356.84 215.53 363.79 204.54C365.25 202.22 369.38 193.43 371.44 192.55C374.67 191.16 384.26 192.02 387.86 192.58C401.85 194.75 412.16 197.82 423.77 206.27C459.29 232.14 481.51 276.36 485.13 319.71C486.7 338.37 488.13 357.69 474.67 372.51C465.87 382.21 451.59 385.15 439.34 387.31C425.15 389.81 410.61 389.12 396.27 388.85C378.66 388.52 361.05 387.67 343.44 387.19C327.83 386.76 306.7 391.16 298.25 374.35C292.84 363.58 295.04 348.5 304.23 340.45C307.43 337.65 314.24 336.32 315.61 332.22C313.91 328.72 309.61 330.75 306.89 331.87C299.53 334.88 293.11 339.87 289.26 346.99C284.53 355.72 283.54 366.27 287.22 375.6C288.81 379.6 292.4 382.34 294.12 385.99C292.06 387.38 287.13 386.51 284.52 386.51C276.41 386.51 268.32 386.35 260.21 386.25C236.21 385.93 212.2 386 188.2 386C175.89 386 162.73 388 152.1 380.7C137.84 370.9 131.97 353.29 128.77 337.23C128.07 333.72 126.33 321.44 128.35 318.88C135.35 321.34 144.11 326.46 151.89 324.27C149.87 322.44 147.12 321.27 144.83 319.7C138.53 315.38 133.94 309.18 131.14 302.11C129.04 296.81 127.01 291.14 126.19 285.46C125.33 279.49 125.89 273.37 121.84 268.34C117.64 263.1 111.63 259.74 106.3 255.83C98.84 250.35 91.41 245.05 84.61 238.72C67.47 222.75 54.45 202.33 43.16 182C36.37 169.78 29.36 157.02 26.29 143.28C24.56 135.53 26.17 127.31 34.35 124.32C45.71 120.16 58.92 125.91 69.13 130.73C87.29 139.3 104.27 150.89 120.76 162.34C124.51 164.94 128.27 167.6 131.84 170.45C135.93 173.72 140.32 179.03 145.18 180.97ZM368.32 131.56C356.78 133.76 345.44 141 335.99 147.79C314.5 163.23 297.26 181.72 283.91 204.63C277.17 216.21 268.29 238.99 282.69 248.74C284.5 249.96 286.94 251.12 289.2 250.76C294.34 249.93 306.48 238.97 310.81 235.29C334.1 215.48 352.08 189.7 365.8 162.63C369.52 155.3 373.27 147.77 374.63 139.57C375.38 135.01 373.38 130.59 368.32 131.56ZM35.83 132.55C31.51 132.86 31.76 138.41 31.99 141.42C32.61 149.58 37.64 157.99 41.3 165.15C54.87 191.73 72.63 217.26 95.76 236.47C102.51 242.09 114.54 255.95 123.7 249.73C137.77 240.18 129.51 218.35 123.07 206.83C108.56 180.9 87.94 159.38 62.55 143.87C56.02 139.88 43.57 132 35.83 132.55ZM177.91 297.77C178.57 296.09 178.16 294.29 178 292.47C177.07 281.6 163.85 271.68 153.1 275.64C151.18 287.13 169.02 296 177.91 297.77ZM249.77 275.64C238.83 272.23 226.57 280.7 224.81 291.53C224.46 293.63 224 295.68 224.67 297.73C226.87 297.45 228.88 296.08 230.96 295.28C238 292.57 243.05 290.68 247.15 283.85C248.49 281.62 250.43 278.26 249.77 275.64ZM200.39 334.39C194.81 335.49 188.36 346.1 191.26 351.34C193.22 354.88 199.11 355.83 202.7 355.45C211.39 354.54 213.95 348.04 209.21 340.92C207.39 338.19 204.25 333.63 200.39 334.39Z" fill-rule="evenodd" stroke-width="0.25" stroke-linejoin="round"/>
+    </svg>
+
+    <div class="caravan">
+      <svg class="camel-lead" viewBox="0 0 4000 4000" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path style="clip-rule:evenodd;fill-rule:evenodd" d="m 1144.393,1501.799 c 0,0 -48.533,-7.233 -58.857,-57.827 0,0 -68.14,15.497 -77.437,-43.36 l -35.108,-5.165 c 0,0 -10.327,-67.115 50.593,-91.893 60.922,-24.785 145.593,-7.228 145.593,-7.228 0,0 -6.198,-25.815 41.295,-42.336 47.5,-16.52 110.482,7.228 123.908,7.228 0,0 3.098,76.408 45.43,152.812 42.335,76.408 69.183,218.9 186.892,208.573 117.705,-10.328 168.312,-144.558 227.165,-186.888 58.852,-42.335 97.072,39.236 216.845,-103.247 0,0 7.228,-68.15 40.271,-91.9 33.042,-23.745 93.969,-6.193 99.132,-62.982 5.163,-56.787 -8.258,-98.087 46.468,-128.03 0,0 -36.136,5.163 -54.727,-44.4 -18.587,-49.56 -19.597,-113.58 35.126,-153.852 54.727,-40.27 124.942,30.973 123.907,151.782 0,0 91.903,-9.283 129.07,104.297 37.171,113.578 53.693,212.702 14.457,299.433 0,0 159.015,4.128 216.836,99.122 57.817,94.993 109.445,185.858 123.902,268.46 14.458,82.606 -22.723,278.788 183.785,530.721 0,0 24.775,16.525 24.775,142.493 0,83.938 -8.248,228.377 -13.758,315.43 H 2843.55 c 30.747,-44.08 76.525,-123.913 77.892,-210.11 2.063,-130.1 -26.845,-194.117 -72.28,-274.658 -45.43,-80.537 -187.922,-163.143 -239.547,-251.938 0,0 -33.042,115.65 -20.655,220.965 12.393,105.317 70.22,200.307 -92.924,315.955 -108.53,76.932 -142.11,155.673 -152.433,199.787 h -161.018 c 40.295,-31.692 99.728,-80.598 139.985,-123.378 66.08,-70.215 175.53,-156.945 165.203,-268.46 -10.323,-111.51 -111.51,-348.997 -152.812,-408.883 0,0 -150.755,99.123 -334.545,74.338 0,0 4.13,225.098 -24.783,322.156 -24.567,82.485 -26.755,273.832 -6.582,404.227 h -161.117 c 34.653,-41.372 78.402,-104.717 89.23,-170.873 18.582,-113.583 -14.457,-264.335 -10.327,-359.325 4.128,-94.993 -35.108,-156.943 -59.887,-251.938 0,0 -74.348,200.31 -128.037,309.762 -53.693,109.45 12.387,111.51 80.537,181.723 30.548,31.475 57.363,58.8 77.65,79.367 -9.902,27.057 -23.673,62.957 -39.49,99.343 -20.335,-42.212 -58.342,-113.55 -100.112,-153.925 -61.95,-59.892 -154.885,-45.44 -165.206,-152.82 -4.678,-48.69 64.998,-282.156 55.757,-464.641 0,0 -150.755,33.033 -299.437,-92.933 -148.684,-125.969 -165.206,-258.13 -164.219,-284.984"/>
+      </svg>
+      <svg class="camel-trail" viewBox="0 0 4000 4000" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path style="clip-rule:evenodd;fill-rule:evenodd" d="m 1144.393,1501.799 c 0,0 -48.533,-7.233 -58.857,-57.827 0,0 -68.14,15.497 -77.437,-43.36 l -35.108,-5.165 c 0,0 -10.327,-67.115 50.593,-91.893 60.922,-24.785 145.593,-7.228 145.593,-7.228 0,0 -6.198,-25.815 41.295,-42.336 47.5,-16.52 110.482,7.228 123.908,7.228 0,0 3.098,76.408 45.43,152.812 42.335,76.408 69.183,218.9 186.892,208.573 117.705,-10.328 168.312,-144.558 227.165,-186.888 58.852,-42.335 97.072,39.236 216.845,-103.247 0,0 7.228,-68.15 40.271,-91.9 33.042,-23.745 93.969,-6.193 99.132,-62.982 5.163,-56.787 -8.258,-98.087 46.468,-128.03 0,0 -36.136,5.163 -54.727,-44.4 -18.587,-49.56 -19.597,-113.58 35.126,-153.852 54.727,-40.27 124.942,30.973 123.907,151.782 0,0 91.903,-9.283 129.07,104.297 37.171,113.578 53.693,212.702 14.457,299.433 0,0 159.015,4.128 216.836,99.122 57.817,94.993 109.445,185.858 123.902,268.46 14.458,82.606 -22.723,278.788 183.785,530.721 0,0 24.775,16.525 24.775,142.493 0,83.938 -8.248,228.377 -13.758,315.43 H 2843.55 c 30.747,-44.08 76.525,-123.913 77.892,-210.11 2.063,-130.1 -26.845,-194.117 -72.28,-274.658 -45.43,-80.537 -187.922,-163.143 -239.547,-251.938 0,0 -33.042,115.65 -20.655,220.965 12.393,105.317 70.22,200.307 -92.924,315.955 -108.53,76.932 -142.11,155.673 -152.433,199.787 h -161.018 c 40.295,-31.692 99.728,-80.598 139.985,-123.378 66.08,-70.215 175.53,-156.945 165.203,-268.46 -10.323,-111.51 -111.51,-348.997 -152.812,-408.883 0,0 -150.755,99.123 -334.545,74.338 0,0 4.13,225.098 -24.783,322.156 -24.567,82.485 -26.755,273.832 -6.582,404.227 h -161.117 c 34.653,-41.372 78.402,-104.717 89.23,-170.873 18.582,-113.583 -14.457,-264.335 -10.327,-359.325 4.128,-94.993 -35.108,-156.943 -59.887,-251.938 0,0 -74.348,200.31 -128.037,309.762 -53.693,109.45 12.387,111.51 80.537,181.723 30.548,31.475 57.363,58.8 77.65,79.367 -9.902,27.057 -23.673,62.957 -39.49,99.343 -20.335,-42.212 -58.342,-113.55 -100.112,-153.925 -61.95,-59.892 -154.885,-45.44 -165.206,-152.82 -4.678,-48.69 64.998,-282.156 55.757,-464.641 0,0 -150.755,33.033 -299.437,-92.933 -148.684,-125.969 -165.206,-258.13 -164.219,-284.984"/>
+      </svg>
+    </div>
+  </div>
+  
+  <div class="bg-veil" aria-hidden="true"></div>
+
   <header>
     <div class="flag-icon">
       <div class="half-green"></div>
@@ -406,7 +285,25 @@
       Waking up the server — this can take up to a minute on the first request.
     </div>
     <div id="messages"></div>
-    <div class="suggestions" id="suggestions">
+    
+    <!-- DEMO SUGGESTIONS: ROW 2 -->
+    <div class="suggestions" id="suggestions-demo">
+      <button class="suggestion-chip" data-q="Can I bring my prescription medication?">
+        Medication refusal
+      </button>
+      <button class="suggestion-chip" data-q="How long must my passport be valid to enter Algeria?">
+        Passport validity
+      </button>
+      <button class="suggestion-chip" data-q="Can I bring my pet dog to Algeria?">
+        Pet rules
+      </button>
+      <button class="suggestion-chip" data-q="Can I drink alcohol in public in Algeria?">
+        Public alcohol
+      </button>
+    </div>
+
+    <!-- GENERAL SUGGESTIONS: ROW 1 -->
+    <div class="suggestions" id="suggestions-general">
       <button class="suggestion-chip" data-q="How many cigarettes can I bring duty-free?">
         Duty-free tobacco?
       </button>
@@ -424,168 +321,61 @@
 
   <footer>
     <form id="input-form">
-      <input
-        type="text"
-        id="question"
-        placeholder="Ask about visas, customs, currency…"
-        autocomplete="off"
-        required
-      />
+      <input type="text" id="question" placeholder="Ask about visas, customs, currency…" autocomplete="off" required />
       <button type="submit" id="send-btn">Ask</button>
     </form>
   </footer>
 
   <script>
-    // Auto-detect backend URL:
-    // - When served by FastAPI (same origin), use relative path
-    // - When opened as a local file, fall back to localhost:8000
-    const API_BASE = window.location.origin.startsWith("http")
-      ? window.location.origin
-      : "http://127.0.0.1:8000";
-
+    const API_BASE = window.location.origin.startsWith("http") ? window.location.origin : "http://127.0.0.1:8000";
     const messagesEl = document.getElementById("messages");
     const form = document.getElementById("input-form");
     const input = document.getElementById("question");
     const sendBtn = document.getElementById("send-btn");
-    const suggestionsEl = document.getElementById("suggestions");
+    const suggestionsEls = document.querySelectorAll(".suggestions"); // Updated to select both rows
     const warmupBanner = document.getElementById("warmup-banner");
-
     let coldStartTimer = null;
-
-    function showWarmupIfSlow() {
-      coldStartTimer = setTimeout(() => {
-        warmupBanner.classList.add("visible");
-      }, 3000);
-    }
-
-    function hideWarmup() {
-      clearTimeout(coldStartTimer);
-      warmupBanner.classList.remove("visible");
-    }
-
-    function appendUser(text) {
-      const el = document.createElement("div");
-      el.className = "message user";
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-      bubble.textContent = text;
-      el.appendChild(bubble);
-      messagesEl.appendChild(el);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-    }
-
-    function appendTyping() {
-      const el = document.createElement("div");
-      el.className = "typing-indicator";
-      el.id = "typing-indicator";
-      el.innerHTML = "<span></span><span></span><span></span>";
-      messagesEl.appendChild(el);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-    }
-
-    function removeTyping() {
-      const el = document.getElementById("typing-indicator");
-      if (el) el.remove();
-    }
-
+    function showWarmupIfSlow() { coldStartTimer = setTimeout(() => { warmupBanner.classList.add("visible"); }, 3000); }
+    function hideWarmup() { clearTimeout(coldStartTimer); warmupBanner.classList.remove("visible"); }
+    function appendUser(text) { const el = document.createElement("div"); el.className = "message user"; const bubble = document.createElement("div"); bubble.className = "bubble"; bubble.textContent = text; el.appendChild(bubble); messagesEl.appendChild(el); messagesEl.scrollTop = messagesEl.scrollHeight; }
+    function appendTyping() { const el = document.createElement("div"); el.className = "typing-indicator"; el.id = "typing-indicator"; el.innerHTML = "<span></span><span></span><span></span>"; messagesEl.appendChild(el); messagesEl.scrollTop = messagesEl.scrollHeight; }
+    function removeTyping() { const el = document.getElementById("typing-indicator"); if (el) el.remove(); }
     function appendBot(answer, sources, refused) {
-      const el = document.createElement("div");
-      el.className = "message bot" + (refused ? " refused" : "");
-
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-      bubble.textContent = answer;
-      el.appendChild(bubble);
-
+      const el = document.createElement("div"); el.className = "message bot" + (refused ? " refused" : "");
+      const bubble = document.createElement("div"); bubble.className = "bubble"; bubble.textContent = answer; el.appendChild(bubble);
       if (sources && sources.length > 0) {
-        const details = document.createElement("details");
-        details.className = "sources";
-
-        const summary = document.createElement("summary");
-        summary.textContent = `Sources (${sources.length})`;
-        details.appendChild(summary);
-
+        const details = document.createElement("details"); details.className = "sources";
+        const summary = document.createElement("summary"); summary.textContent = `Sources (${sources.length})`; details.appendChild(summary);
         const ul = document.createElement("ul");
         sources.forEach((s, i) => {
           const li = document.createElement("li");
-
-          const doc = document.createElement("div");
-          doc.className = "source-doc";
-          doc.textContent = `[${i + 1}] ${s.source_name || s.doc_id}`;
-          li.appendChild(doc);
-
-          const meta = document.createElement("div");
-          meta.className = "source-meta";
-          meta.textContent = `${s.authority} · ${s.language} · score ${s.score}`;
-          li.appendChild(meta);
-
-          if (s.source_url) {
-            const a = document.createElement("a");
-            a.href = s.source_url;
-            a.target = "_blank";
-            a.rel = "noopener noreferrer";
-            a.textContent = s.source_url;
-            li.appendChild(a);
-          }
-
+          const doc = document.createElement("div"); doc.className = "source-doc"; doc.textContent = `[${i + 1}] ${s.source_name || s.doc_id}`; li.appendChild(doc);
+          const meta = document.createElement("div"); meta.className = "source-meta"; meta.textContent = `${s.authority} · ${s.language} · score ${s.score}`; li.appendChild(meta);
+          if (s.source_url) { const a = document.createElement("a"); a.href = s.source_url; a.target = "_blank"; a.rel = "noopener noreferrer"; a.textContent = s.source_url; li.appendChild(a); }
           ul.appendChild(li);
         });
-        details.appendChild(ul);
-        el.appendChild(details);
+        details.appendChild(ul); el.appendChild(details);
       }
-
-      messagesEl.appendChild(el);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
+      messagesEl.appendChild(el); messagesEl.scrollTop = messagesEl.scrollHeight;
     }
-
     async function ask(question) {
-      appendUser(question);
-      appendTyping();
-      sendBtn.disabled = true;
-      input.disabled = true;
-      showWarmupIfSlow();
-
+      appendUser(question); appendTyping(); sendBtn.disabled = true; input.disabled = true; showWarmupIfSlow();
       try {
-        const response = await fetch(`${API_BASE}/ask`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const data = await response.json();
-        removeTyping();
-        appendBot(data.answer, data.sources, data.refused);
-      } catch (err) {
-        removeTyping();
-        appendBot(
-          `Sorry — could not reach the server. (${err.message})`,
-          [],
-          true
-        );
-      } finally {
-        hideWarmup();
-        sendBtn.disabled = false;
-        input.disabled = false;
-        input.focus();
-      }
+        const response = await fetch(`${API_BASE}/ask`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question }) });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json(); removeTyping(); appendBot(data.answer, data.sources, data.refused);
+      } catch (err) { removeTyping(); appendBot(`Sorry — could not reach the server. (${err.message})`, [], true); }
+      finally { hideWarmup(); sendBtn.disabled = false; input.disabled = false; input.focus(); }
     }
-
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const q = input.value.trim();
-      if (!q) return;
-      input.value = "";
-      ask(q);
-    });
-
-    suggestionsEl.addEventListener("click", (e) => {
-      const chip = e.target.closest(".suggestion-chip");
-      if (!chip) return;
-      ask(chip.dataset.q);
+    form.addEventListener("submit", (e) => { e.preventDefault(); const q = input.value.trim(); if (!q) return; input.value = ""; ask(q); });
+    
+    // Attach event listeners to both suggestion containers
+    suggestionsEls.forEach(container => {
+      container.addEventListener("click", (e) => {
+        const chip = e.target.closest(".suggestion-chip");
+        if (!chip) return;
+        ask(chip.dataset.q);
+      });
     });
   </script>
 </body>
